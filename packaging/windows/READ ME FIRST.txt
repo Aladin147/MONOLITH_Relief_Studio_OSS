@@ -1,0 +1,10 @@
+MONOLITH Relief Studio
+
+Extract the ZIP, then double-click Start MONOLITH.bat. Keep the console
+open while using the browser editor. Close the console to stop the server.
+
+Use Open MONOLITH data folder.bat to find projects and logs. Projects
+are stored under %LOCALAPPDATA%\MONOLITH. To update the program, close
+the server and extract the new ZIP into a separate folder.
+
+See LICENSE for the MONOLITH project license.

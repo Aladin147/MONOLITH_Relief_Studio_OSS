@@ -1,0 +1,3 @@
+@echo off
+if not exist "%LOCALAPPDATA%\MONOLITH" mkdir "%LOCALAPPDATA%\MONOLITH"
+explorer "%LOCALAPPDATA%\MONOLITH"

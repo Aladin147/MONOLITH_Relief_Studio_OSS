@@ -1,0 +1,113 @@
+name: windows-package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [windows-package]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "packaging/**"
+      - ".github/workflows/windows-package.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+
+      - name: Compute version
+        run: echo "VERSION=$(git log -1 --format='%h %cs')" >> "$GITHUB_ENV"
+
+      - name: Build bundle
+        env:
+          PYTHONUTF8: "1"
+        run: python packaging/windows/build_bundle.py --out dist-win --version "$VERSION"
+
+      - name: Inspect bundled MSVC runtime (informational)
+        continue-on-error: true
+        env:
+          PYTHONUTF8: "1"
+        run: |
+          echo "--- cv2 directory ---"
+          ls -la "dist-win/MONOLITH/python/Lib/site-packages/cv2/" || true
+          echo "--- msvcp140*.dll anywhere in the bundle ---"
+          find dist-win/MONOLITH -iname 'msvcp140*.dll' || true
+          echo "--- vcruntime140*.dll anywhere in the bundle ---"
+          find dist-win/MONOLITH -iname 'vcruntime140*.dll' || true
+          echo "--- python/ DLLs ---"
+          ls dist-win/MONOLITH/python/*.dll
+          echo "--- cv2 PE imports ---"
+          python packaging/windows/pe_imports.py "dist-win/MONOLITH/python" "dist-win/MONOLITH/python/Lib/site-packages/cv2/cv2.pyd" "dist-win/MONOLITH/python/Lib/site-packages/cv2/opencv_videoio_ffmpeg500_64.dll" || true
+          echo "--- done ---"
+
+      - name: Expand zip for smoke test
+        run: |
+          mkdir smoke
+          python -m zipfile -e dist-win/MONOLITH-*-windows.zip smoke
+          ls smoke/MONOLITH
+
+      - name: Smoke test (blocking)
+        id: smoke
+        run: python packaging/windows/smoke_test.py --python "smoke/MONOLITH/python/python.exe" --app-root "smoke/MONOLITH"
+
+      - name: Start MONOLITH.bat error path (blocking)
+        run: |
+          export MSYS_NO_PATHCONV=1
+          out=$(cmd /c 'smoke\MONOLITH\Start MONOLITH.bat' --port notanumber < /dev/null 2>&1 || true)
+          echo "$out"
+          echo "$out" | grep -q "MONOLITH stopped because of an error"
+
+      - name: Smoke test with 8K (report only)
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python packaging/windows/smoke_test.py --python "smoke/MONOLITH/python/python.exe" --app-root "smoke/MONOLITH" --include-8k
+
+      - name: Backend tests (report only)
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          PYTHONUTF8: "1"
+          MONOLITH_PERF_SLACK: "3"
+        run: |
+          python -m pip install -r backend/requirements.txt -c backend/requirements.lock
+          python -m pytest -q backend/tests
+
+      - name: Upload package
+        if: ${{ !cancelled() && steps.smoke.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: MONOLITH-windows
+          path: dist-win/MONOLITH-*-windows.zip
+          retention-days: 7
+          if-no-files-found: error

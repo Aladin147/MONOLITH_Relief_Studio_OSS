@@ -1,0 +1,21 @@
+# Python environments & caches
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local SQLite vault & generated project caches
+data/
+
+# Frontend dependencies & build artifacts
+frontend/node_modules/
+frontend/dist/
+
+# Windows package build output
+dist-win/
+release/
+
+# Logs & OS artifacts
+*.log
+.DS_Store

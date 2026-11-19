@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Crisp custom range inputs for both light Studio and dark #181A20 CAD theme */
+input[type='range'].studio-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 9999px;
+  background: #dbe3ef;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range'].studio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 9999px;
+  background: #2b7fff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  transition: transform 0.1s ease;
+}
+
+input[type='range'].studio-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+input[type='range'].cad-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: #2f3441;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range'].cad-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #3b82f6;
+  border: 2px solid #181a20;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
+  transition: transform 0.1s ease;
+}
+
+input[type='range'].cad-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Subtle custom scrollbars */
+.cad-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.cad-scroll::-webkit-scrollbar-track {
+  background: #181a20;
+}
+.cad-scroll::-webkit-scrollbar-thumb {
+  background: #2f3441;
+  border-radius: 9999px;
+}
+.cad-scroll::-webkit-scrollbar-thumb:hover {
+  background: #434a5c;
+}
