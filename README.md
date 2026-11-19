@@ -2,6 +2,10 @@
 
 MONOLITH converts raster line drawings into bas-relief heightmaps. A Python service processes the drawing and stores projects locally. A browser-based editor displays the relief and controls its physical dimensions, layer order, brush edits, and exports.
 
+![A line drawing of overlapping circles and a rectangle, followed by two shaded reliefs showing the upper-left circle before and after a layer edit.](docs/images/layer-order.webp)
+
+The upper-left circle starts in front of the rectangle. Selecting it in **Layers** and choosing **Send back** places it behind the rectangle. Both reliefs use the same view and lighting.
+
 ## Run from source on Linux
 
 Install Python 3.10 with venv support (on Debian or Ubuntu, install the matching python3-venv package), Node.js 20 or newer, npm, and Bash. From the repository root run:
